@@ -9,6 +9,7 @@ map_file = "map.dat"
 path_file = "path.dat"
 pos_file = "pos.dat"
 lidar_file = "lidar.dat"
+dynamic_file = "dynamic_map.dat"
 
 # map
 plt.plotfile(map_file, delimiter=' ', cols=(0,1), 
@@ -18,6 +19,10 @@ plt.plotfile(map_file, delimiter=' ', cols=(0,1),
 plt.plotfile(lidar_file, delimiter=' ', cols=(0,1), 
 	names=('x','y'), checkrows = 0, marker='o', 
 	linestyle=' ', color='r', newfig=False)
+
+plt.plotfile(dynamic_file, delimiter=' ', cols=(0,1), 
+	names=('x','y'), checkrows = 0, marker='o', 
+	linestyle=' ', color='r', newfig=True)
 
 # if args.path:
 #     # path

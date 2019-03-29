@@ -13,7 +13,7 @@
 #include "vehicle.h"
 
 // update the possibilty of a node's obstacle state --> for occupancy grid map
-void updateOccupancyMap(std::vector<double>& mea, std::vector<std::vector<Node*>>& map_in, Vehicle& car, double res);
+void updateOccupancyMap(std::vector<std::vector<double>>& mea, std::vector<std::vector<Node*>>& map_in, Vehicle& car, double res);
 
 
 #endif /* PF_H_ */

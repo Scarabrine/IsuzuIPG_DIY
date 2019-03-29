@@ -34,7 +34,7 @@ public:
 		if(hit && poss < 125) poss+=3;
 		else if(!hit && poss > -126) --poss;
 		if(poss >= thre)
-			occu = false;
+			occu = true;
 	}
 
 private:

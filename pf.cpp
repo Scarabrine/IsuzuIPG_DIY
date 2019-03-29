@@ -6,14 +6,14 @@
 
 using namespace std;
 
-void updateOccupancyMap(vector<double>& mea, vector<vector<Node*>>& map_in, Vehicle& car, double res){
+void updateOccupancyMap(vector<vector<double>>& mea, vector<vector<Node*>>& map_in, Vehicle& car, double res){
 	vector<vector<int>> m_obstacle(mea.size(), vector<int>(2,0));
 	vector<double> car_state = car.getState();
 	double cur_x = car_state[0], cur_y = car_state[1], cur_yaw = car_state[2]; // current car's state
 	double ori_x = car.getOri()[0], ori_y = car.getOri()[1]; // the origin of the world map
 	for(auto ob: mea){
 		// calculate obstacle's position in world frame
-		double o_x = cur_x + mea[0]*cos(mea[1]+cur_yaw), o_y = cur_y + mea[0]*sin(mea[1]+cur_yaw);
+		double o_x = cur_x + ob[0]*cos(ob[1]+cur_yaw), o_y = cur_y + ob[0]*sin(ob[1]+cur_yaw);
 		// calcualte obstacle's index infomation in map
 		double o_x_i = (o_x-ori_x)/res+1;
 		double o_y_i = (o_y-ori_y)/res+1;
