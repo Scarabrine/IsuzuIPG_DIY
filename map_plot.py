@@ -9,7 +9,9 @@ map_file = "map.dat"
 path_file = "path.dat"
 pos_file = "pos.dat"
 lidar_file = "lidar.dat"
+robot_file = "robot_pos.dat"
 dynamic_file = "dynamic_map.dat"
+motion_mea_file = "robot_pos_mea.dat"
 
 # map
 plt.plotfile(map_file, delimiter=' ', cols=(0,1), 
@@ -19,6 +21,14 @@ plt.plotfile(map_file, delimiter=' ', cols=(0,1),
 plt.plotfile(lidar_file, delimiter=' ', cols=(0,1), 
 	names=('x','y'), checkrows = 0, marker='o', 
 	linestyle=' ', color='r', newfig=False)
+
+plt.plotfile(robot_file, delimiter=' ', cols=(0,1), 
+	names=('x','y'), checkrows = 0, marker='*', 
+	linestyle=' ', color='g', newfig=False)
+
+plt.plotfile(motion_mea_file, delimiter=' ', cols=(0,1), 
+	names=('x','y'), checkrows = 0, marker='*', 
+	linestyle=' ', color='y', newfig=False)
 
 plt.plotfile(dynamic_file, delimiter=' ', cols=(0,1), 
 	names=('x','y'), checkrows = 0, marker='o', 

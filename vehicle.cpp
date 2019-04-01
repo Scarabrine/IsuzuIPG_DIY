@@ -6,6 +6,7 @@
 #include <queue>
 #include <string>
 #include <iostream>
+#include <random>
 
 using namespace std;
 
@@ -19,13 +20,32 @@ void Vehicle::move(double v, double sa, double dt){
 	yaw += sa;
 }
 
+void Vehicle::move_mea(double v, double sa, double dt){
+	std::default_random_engine generator;
+	normal_distribution<double> dist_v(mean_v, stdev_v);
+	normal_distribution<double> dist_sa(mean_sa, stdev_sa);
+	double v_n = (v + dist_v(generator));
+	double sa_n = (sa + dist_sa(generator));
+	cout << "v: " << v << " sa: " << sa << " v_n: " << v_n << " sa_n: " << sa_n << endl; 
+	x_mea += v_n*cos(yaw_mea)*dt;
+	y_mea += v_n*sin(yaw_mea)*dt;
+	yaw_mea += sa_n;
+}
+
 void Vehicle::fixOri(vector<double>& origin){
 	ori_x = origin[0];
 	ori_y = origin[1];
-	return;
 }
 
 vector<vector<double>> Vehicle::scanMeasure(vector<vector<Node*>>& map_in, double res){
+	const double mean_r = 0;	// mean for range gaussian noise
+	const double stdev_r = 0.05; // stdev for range gaussian noise
+	const double mean_a = 0;	// mean for angle gaussian noise
+	const double stdev_a = 0.05;// stdev for angle gaussian noise
+	std::default_random_engine generator;
+	normal_distribution<double> dist_r(mean_r, stdev_r);
+	normal_distribution<double> dist_a(mean_a, stdev_a);
+
 	unordered_set<string> visit; // closed set
 	vector<vector<int>> dir = {{-1,0},{1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,-1},{-1,1}};
 	vector<vector<double>> block; // {{a,b},......} which means the angle between a and b have been blocked
@@ -85,6 +105,10 @@ vector<vector<double>> Vehicle::scanMeasure(vector<vector<Node*>>& map_in, doubl
 					// whether this is a block, if is a block, add the range it blocks and put it in lidar measurement
 					if(flag == 0 && next_node->isOcc()){
 						double relative_angle = angle_g-yaw; // turn global angle into robot coordinate
+						// add gaussian noise to measurement
+						r += dist_r(generator);
+						relative_angle += dist_a(generator);
+						// end gaussian noise to measurement
 						vector<double> measure = {r,relative_angle};
 						result.push_back(measure);
 						// calculate block angle, only use a approximation
