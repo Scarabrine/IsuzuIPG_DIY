@@ -145,6 +145,7 @@ int main(){
 	// //------- Particle Filter Test End ------//
 
 	//-------- Measure during motion -----------//
+	particleFilter pf;
 	double test_x = 530.427, test_y = 32.1875; // initialize the test vehicle position
 	Vehicle test_v(test_x, test_y, 0.0, 60.0);
 	vector<double> origin = {limit[0], limit[2]};
@@ -185,7 +186,7 @@ int main(){
 	    output_motion_mea << test_v.getMeaState()[0] << " " << test_v.getMeaState()[1] << endl;
 	    // update ends
 		cout << "Total obstacles captured: " << measure.size() << endl;
-		updateOccupancyMap(measure, map_d, test_v, reso);
+		pf.updateOccupancyMap(measure, map_d, test_v, reso);
 		cout << "finish the motion step " << counter << endl;
 	}
 	output_lidar.close();

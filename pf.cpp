@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void updateOccupancyMap(vector<vector<double>>& mea, vector<vector<Node*>>& map_in, Vehicle& car, double res){
+void particleFilter::updateOccupancyMap(vector<vector<double>>& mea, vector<vector<Node*>>& map_in, Vehicle& car, double res){
 	vector<vector<int>> m_obstacle(mea.size(), vector<int>(2,0));
 	vector<double> car_state = car.getState();
 	double cur_x = car_state[0], cur_y = car_state[1], cur_yaw = car_state[2]; // current car's state
@@ -29,6 +29,7 @@ void updateOccupancyMap(vector<vector<double>>& mea, vector<vector<Node*>>& map_
 		// !!But now, I only care the hit part not the free space along the laser beam.
 		map_in[o_y_i][o_x_i]->updateNode(true); // true == hit
 	}
-	return;
 }
+
+
 
