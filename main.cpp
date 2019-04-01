@@ -52,13 +52,24 @@ int main(){
 	// measure 1
 	double test_x = 553.427, test_y = 32.1875;
 	Vehicle test_v(test_x, test_y, 0.0, 60.0);
-	vector<double> origin = {limit[0], limit[2]};
+	vector<double> origin = {limit[0], limit[2]}; // origin is the min_x and min_y
 	test_v.fixOri(origin);
 	vector<vector<double>> measure;
 	measure = test_v.scanMeasure(map_s, reso);
-	cout << measure.size() << endl;
+	cout << "Total obstacles captured: " << measure.size() << endl;
 	updateOccupancyMap(measure, map_d, test_v, reso);
 	cout << "measure1 finish" << endl; 
+
+	ofstream lidar_out ("lidar.dat");
+	if(lidar_out.is_open())
+	{
+	    for(auto iter: measure){
+	    	double o_x = test_x + iter[0]*cos(iter[1]);
+	    	double o_y = test_y + iter[0]*sin(iter[1]);
+	    	lidar_out << o_x << " " << o_y << endl;
+	    }
+	}
+	else cout << "Unable to open file";
 	
 	// measure 2
 	test_x = 570.427; test_y = 32.1875;
@@ -69,9 +80,15 @@ int main(){
 	cout << "has been here" << endl;
 	measure = test_v2.scanMeasure(map_s, reso);
 	cout << "has been here 1" << endl;
-	cout << measure.size() << endl;
+	cout << "Total obstacles captured: " << measure.size() << endl;
 	updateOccupancyMap(measure, map_d, test_v2, reso);
 	cout << "measure2 finish" << endl; 
+
+	for(auto iter: measure){
+    	double o_x = test_x + iter[0]*cos(iter[1]);
+    	double o_y = test_y + iter[0]*sin(iter[1]);
+    	lidar_out << o_x << " " << o_y << endl;
+    }
 
 	// measure 3
 	test_x = 540.427; test_y = 32.1875;
@@ -80,9 +97,15 @@ int main(){
 	test_v3.fixOri(origin);
 	measure.clear();
 	measure = test_v3.scanMeasure(map_s, reso);
-	cout << measure.size() << endl;
+	cout << "Total obstacles captured: " << measure.size() << endl;
 	updateOccupancyMap(measure, map_d, test_v3, reso);
-	cout << "measure3 finish" << endl; 
+	cout << "measure3 finish" << endl;
+
+	for(auto iter: measure){
+    	double o_x = test_x + iter[0]*cos(iter[1]);
+    	double o_y = test_y + iter[0]*sin(iter[1]);
+    	lidar_out << o_x << " " << o_y << endl;
+    }
 
 	// measure 4
 	test_x = 530.427; test_y = 32.1875;
@@ -91,11 +114,18 @@ int main(){
 	test_v4.fixOri(origin);
 	measure.clear();
 	measure = test_v4.scanMeasure(map_s, reso);
-	cout << measure.size() << endl;
+	cout << "Total obstacles captured: " << measure.size() << endl;
 	updateOccupancyMap(measure, map_d, test_v4, reso);
 
-	cout << "finish measuere" << endl;
+	for(auto iter: measure){
+    	double o_x = test_x + iter[0]*cos(iter[1]);
+    	double o_y = test_y + iter[0]*sin(iter[1]);
+    	lidar_out << o_x << " " << o_y << endl;
+    }
 
+	cout << "finish measuere" << endl;
+	lidar_out.close();
+	// record the dynamic map based on the data from last several measurements
 	ofstream output ("dynamic_map.dat");
 	if(output.is_open())
 	{

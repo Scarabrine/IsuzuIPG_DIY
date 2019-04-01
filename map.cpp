@@ -77,13 +77,13 @@ void initMap(vector<vector<Node*>>& map, vector<double> limit, double res, int8_
 	int size_y = (y_max-y_min)/res+1;
 	vector<vector<Node*>> ini(size_y, vector<Node*>(size_x, new Node(0.0, 0.0, false)));
 	// cout << "init map here" << endl;
-	for(int i = 0; i < size_y; ++i){
+	for(int i = 0; i < size_x; ++i){
 		// cout << "build " << i << "row" << endl;
-		for(int j = 0; j < size_x; ++j){
+		for(int j = 0; j < size_y; ++j){
 			double x_ini = x_min + res*i, y_ini = y_min + res*j;
 			bool occ_ini = false;
 			Node* node_new = new Node(x_ini, y_ini, occ_ini);
-			ini[i][j] = node_new;
+			ini[j][i] = node_new;
 			node_new->possSet(poss, thre);
 		}
 	}
