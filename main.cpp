@@ -149,8 +149,10 @@ int main(){
 	Vehicle test_v(test_x, test_y, 0.0, 60.0);
 	vector<double> origin = {limit[0], limit[2]};
 	test_v.fixOri(origin);
-	test_v.addNoise(0.0, 0.01, 0.0, 0.01); // add noise to motion model's velocity and steering angle. In the order of:
-										   // mean_v, stdev_v, mean_sa, stdev_sa
+	test_v.addNoiseMotion(0.0, 0.01, 0.0, 0.01); // add noise to motion model's velocity and steering angle. In the order of:
+										   		 // mean_v, stdev_v, mean_sa, stdev_sa. This step is necessary or the motion will be ground truth
+	test_v.addNoiseMea(0.0, 0.05, 0.0, 0.05); // add noise to measurement model's range and angle. In the order of:
+										   	  // mean_r, stdev_r, mean_a, stdev_a. This step is necessary or the measurement will be ground truth
 
 	string v_profile = "motion_command.dat"; // 1->v, 2->sa, 3->dt
 	ifstream motion_c;

@@ -33,11 +33,18 @@ public:
 
 	void fixOri(std::vector<double>& origin);
 
-	void addNoise(double mean_v_in, double stdev_v_in, double mean_sa_in, double stdev_sa_in){
+	void addNoiseMotion(double mean_v_in, double stdev_v_in, double mean_sa_in, double stdev_sa_in){
 		mean_v = mean_v_in;
 		stdev_v = stdev_v_in;
 		mean_sa = mean_sa_in;
 		stdev_sa = stdev_sa_in;
+	}
+
+	void addNoiseMea(double mean_r_in, double stdev_r_in, double mean_a_in, double stdev_a_in){
+		mean_r = mean_r_in;
+		stdev_r = stdev_r_in;
+		mean_a = mean_a_in;
+		stdev_a = stdev_a_in;
 	}
 	
 	std::vector<double> getState(){
@@ -72,10 +79,15 @@ private:
 	//
 	double ori_x;
 	double ori_y;
+	// noise for motion and measurment model
 	double mean_v;
 	double mean_sa;
 	double stdev_v;
 	double stdev_sa;
+	double mean_r;
+	double mean_a;
+	double stdev_r;
+	double stdev_a;
 };
 
 std::string coorToStr(int x, int y);
