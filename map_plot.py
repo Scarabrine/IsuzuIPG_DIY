@@ -28,7 +28,7 @@ plt.plotfile(lidar_file, delimiter=' ', cols=(0,1),
 
 plt.plotfile(robot_file, delimiter=' ', cols=(0,1), 
 	names=('x','y'), checkrows = 0, marker='*', 
-	linestyle=' ', color='g', newfig=False)
+	linestyle=' ', color='g', newfig=True)
 
 plt.plotfile(pos_est_file, delimiter=' ', cols=(0,1), 
 	names=('x','y'), checkrows = 0, marker='*', 
@@ -38,17 +38,17 @@ plt.plotfile(motion_mea_file, delimiter=' ', cols=(0,1),
 	names=('x','y'), checkrows = 0, marker='*', 
 	linestyle=' ', color='y', newfig=False)
 
-plt.plotfile(sample_file, delimiter=' ', cols=(0,1), 
-	names=('x','y'), checkrows = 0, marker='*', 
-	linestyle=' ', color='c', newfig=False)
+# plt.plotfile(sample_file, delimiter=' ', cols=(0,1), 
+# 	names=('x','y'), checkrows = 0, marker='*', 
+# 	linestyle=' ', color='c', newfig=False)
 
-# plt.plotfile(map_gt_file, delimiter=' ', cols=(0,1), 
-# 	names=('x','y'), checkrows = 0, marker='o', 
-# 	linestyle=' ', color='b', newfig=True)
+plt.plotfile(map_gt_file, delimiter=' ', cols=(0,1), 
+	names=('x','y'), checkrows = 0, marker='o', 
+	linestyle=' ', color='b', newfig=True)
 
-# plt.plotfile(dynamic_file, delimiter=' ', cols=(0,1), 
-# 	names=('x','y'), checkrows = 0, marker='o', 
-# 	linestyle=' ', color='r', newfig=False)
+plt.plotfile(dynamic_file, delimiter=' ', cols=(0,1), 
+	names=('x','y'), checkrows = 0, marker='o', 
+	linestyle=' ', color='r', newfig=False)
 
 
 

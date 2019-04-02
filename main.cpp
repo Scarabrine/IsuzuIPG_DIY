@@ -150,14 +150,14 @@ int main(){
 	// //------- Particle Filter Test End ------//
 
 	//-------- Measure during motion + particle filter -----------//
-	particleFilter pf(200); // initiliaze the sample number as 50
-	double test_x = 530.427, test_y = 32.1875, test_yaw = 0.0; // initialize the test vehicle position
-	vector<double> stdv_pf = {2.0, 2.0, 0.1}; // start position's standard deviation [x, y, yaw] for particle filter
-	Vehicle test_v(test_x, test_y, test_yaw, 20.0);
+	particleFilter pf(8000); // initiliaze the sample number as 50
+	double test_x = 430.427, test_y = 32.1875, test_yaw = 0.0; // initialize the test vehicle position
+	vector<double> stdv_pf = {4.0, 4.0, 0.1}; // start position's standard deviation [x, y, yaw] for particle filter
+	Vehicle test_v(test_x, test_y, test_yaw, 40.0);
 	pf.init(test_x, test_y, test_yaw, stdv_pf);
 	vector<double> origin = {limit[0], limit[2]};
 	test_v.fixOri(origin);
-	test_v.addNoiseMotion(0.0, 0.5, 0.0, 0.05); // add noise to motion model's velocity and steering angle. In the order of:
+	test_v.addNoiseMotion(0.0, 0.5, 0.0, 0.02); // add noise to motion model's velocity and steering angle. In the order of:
 										   		 // mean_v, stdev_v, mean_sa, stdev_sa. This step is necessary or the motion will be ground truth
 	test_v.addNoiseMea(0.0, 0.0, 0.0, 0.0); // add noise to measurement model's range and angle. In the order of:
 										   	  // mean_r, stdev_r, mean_a, stdev_a. This step is necessary or the measurement will be ground truth
@@ -198,8 +198,8 @@ int main(){
 		// Particle filter starts to take estimation
 		pf.updateOccupancyMap(measure, map_d, test_v, reso);
 		pf.prediction(noise_motion);
-		pf.updateWeights(map_g, measure, test_v, reso);
-		pf.resample();
+		pf.updateWeights(map_d, measure, test_v, reso);
+		pf.resample(test_v);
 		pf.estState(test_v);
 		output_est_state << test_v.x_est << " " << test_v.y_est << " " << test_v.yaw_est << endl;
 		// Particle filter estimation ends

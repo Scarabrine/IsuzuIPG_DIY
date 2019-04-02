@@ -10,7 +10,7 @@
 
 using namespace std;
 
-default_random_engine gene;
+default_random_engine gene(std::random_device{}());
 
 string coorToStr(int x, int y){
 	return (to_string(x)+","+to_string(y));
@@ -19,7 +19,7 @@ string coorToStr(int x, int y){
 void Vehicle::move(double v, double sa, double dt){
 	x += v*cos(yaw)*dt;
 	y += v*sin(yaw)*dt;
-	yaw += sa;
+	yaw += sa*dt;
 }
 
 vector<double> Vehicle::move_mea(double v, double sa, double dt){
@@ -30,7 +30,7 @@ vector<double> Vehicle::move_mea(double v, double sa, double dt){
 	cout << "v: " << v << " sa: " << sa << " v_n: " << v_n << " sa_n: " << sa_n << endl; 
 	x_mea += v_n*cos(yaw_mea)*dt;
 	y_mea += v_n*sin(yaw_mea)*dt;
-	yaw_mea += sa_n;
+	yaw_mea += sa_n*dt;
 
 	vector<double> noise_motion = {v_n, sa_n, dt};
 	return noise_motion;

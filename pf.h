@@ -45,7 +45,7 @@ public:
 	// the test_v is also needed because the map's origin is required to calculate the index of bostacle.
 	void updateWeights(std::vector<std::vector<Node*>>& map_d, std::vector<std::vector<double>>& mea, Vehicle& test_v, double res);
 
-	void resample();
+	void resample(Vehicle& test_v);
 
 	void estState(Vehicle& test_v);
 

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-default_random_engine gen;
+default_random_engine gen(std::random_device{}());
 
 // initialize the start sample positions, [x, y, yaw] is the mean and std is the standard deviation for the state, the start samples will be 
 // selected by gaussian distribution based on the above mean and standard distribution
@@ -57,7 +57,7 @@ void particleFilter::prediction(vector<double>& motion){
 	for (auto& p : samples){
 		p.x += v_n*cos(p.yaw)*dt;
 		p.y += v_n*sin(p.yaw)*dt;
-		p.yaw += sa_n;
+		p.yaw += sa_n*dt;
 	}
 	// cout << "prediction is finished" << endl;
 }
@@ -67,7 +67,7 @@ void particleFilter::prediction(vector<double>& motion){
 void particleFilter::updateWeights(vector<vector<Node*>>& map_d, vector<vector<double>>& mea, Vehicle& test_v, double res){
 	double ori_x = test_v.getOri()[0], ori_y = test_v.getOri()[1];
 	int i = 0;
-	cout << "yaw: ";
+	// cout << "weight: ";
 	// cout << "p.x:"; 
 	for(auto& p : samples){
 		for(auto& obj : mea){
@@ -89,7 +89,7 @@ void particleFilter::updateWeights(vector<vector<Node*>>& map_d, vector<vector<d
 
 		}
 		weights[i] = p.weight;
-		cout << p.yaw << " ";
+		// cout << p.weight << " ";
 		// cout << p.x << " ";
 		++i;
 		// cout << "updateWeights is finished" << endl;
@@ -97,17 +97,61 @@ void particleFilter::updateWeights(vector<vector<Node*>>& map_d, vector<vector<d
 	cout << endl;
 }
 
-void particleFilter::resample(){
+void particleFilter::resample(Vehicle& test_v){
+	// Method 1
 	discrete_distribution<int> d(weights.begin(), weights.end());
 	vector<Particle> weighted_sample(sample_num);
-
 	for(int i = 0; i < sample_num; ++i){
 		int j = d(gen);
 		weighted_sample.at(i) = samples.at(j);
 		weighted_sample[i].weight = 1.0;
 	}
-
 	samples = weighted_sample;
+
+	// // Method 2: Use Guassian // Doesn't work well
+	// test_v.x_est = 0.0;
+	// test_v.y_est = 0.0;
+	// test_v.yaw_est = 0.0;
+	// double sum = 0.0;
+	// for(auto& p : samples)
+	// 	sum+=p.weight;
+	// for(auto& p : samples){
+	// 	test_v.x_est+=(p.x*(p.weight)/sum);
+	// 	test_v.y_est+=(p.y*(p.weight)/sum);
+	// 	test_v.yaw_est+=(p.yaw*(p.weight)/sum);
+	// }
+	// double stdv_x = 0.0;
+	// double stdv_y = 0.0;
+	// double stdv_yaw = 0.0;
+	// for(auto& p : samples){
+	// 	stdv_x += p.weight*(p.x-test_v.x_est)*(p.x-test_v.x_est)/sum;
+	// 	stdv_y += p.weight*(p.y-test_v.y_est)*(p.y-test_v.y_est)/sum;
+	// 	stdv_yaw += p.weight*(p.yaw-test_v.yaw_est)*(p.yaw-test_v.yaw_est)/sum;
+	// }
+	// stdv_x = sqrt(stdv_x);
+	// stdv_y = sqrt(stdv_y);
+	// stdv_yaw = sqrt(stdv_yaw);
+
+	// normal_distribution<double> dist_x(test_v.x_est, stdv_x);
+	// normal_distribution<double> dist_y(test_v.y_est, stdv_y);
+	// normal_distribution<double> dist_yaw(test_v.yaw_est, stdv_yaw);
+
+	// for(auto& p : samples){
+	// 	p.x = dist_x(gen);
+	// 	p.y = dist_y(gen);
+	// 	p.yaw = dist_yaw(gen);
+	// 	if(p.yaw > 3.141){
+	// 		while(p.yaw > -3.141)
+	// 			p.yaw -= 3.141;
+	// 		p.yaw += 3.141;
+	// 	}
+	// 	if(p.yaw < -3.141){
+	// 		while(p.yaw < 3.141)
+	// 			p.yaw += 3.141;
+	// 		p.yaw -= 3.141;
+	// 	}
+	// 	p.weight = 1.0;
+	// }
 	// cout << "resample is finished" << endl;
 }
 
