@@ -13,6 +13,12 @@
 
 class Vehicle{
 public:
+	// the estimated state by particle filter
+	double x_est;
+	double y_est;
+	double yaw_est;
+	// end: the estimated state by particle filter
+
 	Vehicle(double x_in, double y_in, double yaw_in, double range_in){
 		x = x_in;
 		y = y_in;
@@ -29,7 +35,7 @@ public:
 	// motion model for the vehicle
 	void move(double v, double sa, double dt);
 
-	void move_mea(double v, double sa, double dt);
+	std::vector<double> move_mea(double v, double sa, double dt);
 
 	void fixOri(std::vector<double>& origin);
 
