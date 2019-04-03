@@ -42,11 +42,14 @@ The path planning part is adapted from [Atsushi Sakai](https://atsushisakai.gith
 
 ## Code Structure
 In this part, I will go through the structure of each function briefly
+
 ### map.cpp & map.h
 'map' defines the map we use in the simulation. The map is in occupancy grid map form and each cell is represents by the class 'Node'. 'Node' contains information includes real work position (double x, double y), whether this cell is occupied (bool occu), the possiblity of this cell being a obstacle (poss) and the thresold value we consider this cell as a obstalce (thre). Only when the 'poss' exceeds 'thre' can we consider 'occu' being true.
 Moreover, 'map.cpp' includes two map initialization functions. 'vector<double> initMap' generates a static map based on the .dat file from IPG. The static map will only contains the unchanged features in the parking lot. This comes from another assumption we have - to ease the computational power we spend on mapping and localzation, we will first get the offline map of the parking lot (this is a general solution for current industry). To avoid cheating, we only contain the unchanged features in this offline map like poler or lamps. 'void initMap' generates a blank dynamic map with the same size as static map. The dynamic map will contains all the features captured by lidar.
   
 ### vehicle.cpp & vehicle.h
+The vehilce.cpp and vehicle.h mainly contain a class called 'Vehicle'. This class includes all the parameters of the vehicle:
+* x, y, yaw -> These three parameters correspond to the ground truth position and heading angle of vehicle.
 
 ### radar.cpp && radar.h
 
