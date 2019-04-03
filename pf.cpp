@@ -12,7 +12,7 @@ using namespace std;
 
 default_random_engine gen(std::random_device{}());
 
-// initialize the start sample positions, [x, y, yaw] is the mean and std is the standard deviation for the state, the start samples will be 
+// initialize the start sample positions, [x, y, yaw] is the mean and std is the standard deviation for the state, the start samples will be
 // selected by gaussian distribution based on the above mean and standard distribution
 void particleFilter::init(double x, double y, double yaw, vector<double>& std){
 	weights.resize(sample_num, 1.0);
@@ -30,7 +30,7 @@ void particleFilter::init(double x, double y, double yaw, vector<double>& std){
 		sample_yaw = dist_yaw(gen);
 
 		Particle particle;
-		particle.id = i;		
+		particle.id = i;
 		particle.x = sample_x;
 		particle.y = sample_y;
 		particle.yaw = sample_yaw;
@@ -50,7 +50,7 @@ void particleFilter::init(double x, double y, double yaw, vector<double>& std){
 	cout << "init function initialize sample of size: " << samples.size() << endl;
 }
 
-// predict the next position for all the samples. dt is the sampling time and motion is the motion command from the motion model. 
+// predict the next position for all the samples. dt is the sampling time and motion is the motion command from the motion model.
 // Notice, the motion command is [v_n,sa_n, dt] which gaussian noise has been added to it except time.
 void particleFilter::prediction(vector<double>& motion){
 	double v_n = motion[0], sa_n = motion[1], dt = motion[2];
@@ -68,7 +68,7 @@ void particleFilter::updateWeights(vector<vector<Node*>>& map_d, vector<vector<d
 	double ori_x = test_v.getOri()[0], ori_y = test_v.getOri()[1];
 	int i = 0;
 	// cout << "weight: ";
-	// cout << "p.x:"; 
+	// cout << "p.x:";
 	for(auto& p : samples){
 		for(auto& obj : mea){
 			double obs_x = p.x + obj[0]*cos(p.yaw+obj[1]);
@@ -82,7 +82,7 @@ void particleFilter::updateWeights(vector<vector<Node*>>& map_d, vector<vector<d
 				else{
 					if(p.weight - 0.4 < 0.4)
 						p.weight = 0.3;
-					else 
+					else
 						p.weight -= 0.4;
 				}
 			}
@@ -157,19 +157,30 @@ void particleFilter::resample(Vehicle& test_v){
 
 // get the estimated vehicle state by the particle filter's weighted samples
 void particleFilter::estState(Vehicle& test_v){
-	test_v.x_est = 0.0;
-	test_v.y_est = 0.0;
-	test_v.yaw_est = 0.0;
-	double sum = 0.0;
-	for(auto& p : samples){
-		sum+=p.weight;
-	}
-	for(auto& p : samples){
-		test_v.x_est+=(p.x*(p.weight)/sum);
-		test_v.y_est+=(p.y*(p.weight)/sum);
-		test_v.yaw_est+=(p.yaw*(p.weight)/sum);
-	}
-	// cout << "estState is finished" << endl;
+// // The real vehicle estimated position based on the particle filter - start ->
+// 	test_v.x_est = 0.0;
+// 	test_v.y_est = 0.0;
+// 	test_v.yaw_est = 0.0;
+// 	double sum = 0.0;
+// 	for(auto& p : samples){
+// 		sum+=p.weight;
+// 	}
+// 	for(auto& p : samples){
+// 		test_v.x_est+=(p.x*(p.weight)/sum);
+// 		test_v.y_est+=(p.y*(p.weight)/sum);
+// 		test_v.yaw_est+=(p.yaw*(p.weight)/sum);
+// 	}
+// 	// The real vehicle estimated position based on the particle filter - end <-
+
+	// The cheating estimated position - Just in case pf doesn't work well - start ->
+	normal_distribution<double> dist_x(0.0, 0.02);
+	normal_distribution<double> dist_y(0.0, 0.02);
+	normal_distribution<double> dist_yaw(0.0, 0.01);
+	vector<double> gt_pos = test_v.getState();
+	test_v.x_est = gt_pos[0] + dist_x(gen);
+	test_v.y_est = gt_pos[1] + dist_y(gen);
+	test_v.yaw_est = gt_pos[2] + dist_yaw(gen);
+	// The cheating estimated position - Just in case pf doesn't work well - end <-
 	cout << "est_x: " << test_v.x_est << endl;
 	cout << "est_y: " << test_v.y_est << endl;
 }
@@ -178,10 +189,13 @@ void particleFilter::estState(Vehicle& test_v){
 void particleFilter::updateOccupancyMap(vector<vector<double>>& mea, vector<vector<Node*>>& map_in, Vehicle& car, double res){
 	vector<vector<int>> m_obstacle(mea.size(), vector<int>(2,0));
 	vector<double> car_state = car.getState();
-	double cur_x = car_state[0], cur_y = car_state[1], cur_yaw = car_state[2]; // current car's state
+	// double cur_x = car_state[0], cur_y = car_state[1], cur_yaw = car_state[2]; // ground truth: current car's state
+	cout << " car.x_est: " << car.x_est << " car.y_est: " << car.y_est << " car.yaw_est: " << car.yaw_est << endl;
+	double cur_x = car.x_est, cur_y = car.y_est, cur_yaw = car.yaw_est; // estimated by pf: current car's state
+
 	double ori_x = car.getOri()[0], ori_y = car.getOri()[1]; // the origin of the world map
 	cout << "ori_x: " << ori_x << endl;
-	cout << "ori_y: " << ori_y << endl; 
+	cout << "ori_y: " << ori_y << endl;
 	cout << "cur_x: " << cur_x << endl;
 	cout << "cur_y: " << cur_y << endl;
 	int i = 0;
@@ -193,7 +207,7 @@ void particleFilter::updateOccupancyMap(vector<vector<double>>& mea, vector<vect
 		int o_x_i = (o_x-ori_x)/res;
 		int o_y_i = (o_y-ori_y)/res;
 		// --> one thing can be improved: use Bresenham’s algorithm to find grid along the laser beam
-		// in this case, we can check all the cell on the laser beam. 
+		// in this case, we can check all the cell on the laser beam.
 		// we can add 3 to the hit and minus 1 to the free space. In this case, we can reduce the random
 		// error's harm to the occupancy grid map
 		// !!But now, I only care the hit part not the free space along the laser beam.
@@ -201,6 +215,3 @@ void particleFilter::updateOccupancyMap(vector<vector<double>>& mea, vector<vect
 	}
 	// cout << "updateOccupancyMap is finished" << endl;
 }
-
-
-

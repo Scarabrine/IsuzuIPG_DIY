@@ -27,7 +27,7 @@ int main(){
 	initMap(map_d, limit, reso, 0, 12); // initialize the dynamic map
 	//---------- See if the static map and ground truth map have the same size ------------//
 	cout << "map_s-> " << "x_min: " << limit[0] << " x_max: " << limit[1] << " y_min: " << limit[2] << " y_max: " << limit[3] << endl;
-	cout << "map_gt-> " << "x_min: " << limit_gt[0] << " x_max: " << limit_gt[1] << " y_min: " << limit_gt[2] << " y_max: " << limit_gt[3] << endl; 
+	cout << "map_gt-> " << "x_min: " << limit_gt[0] << " x_max: " << limit_gt[1] << " y_min: " << limit_gt[2] << " y_max: " << limit_gt[3] << endl;
 	//---------------------------------- Check size end -----------------------------------//
 
 	// //--- lidar test at from a fixed vehicle position ---//
@@ -39,7 +39,7 @@ int main(){
 	// measure = test_v.scanMeasure(map_s, reso);
 	// cout << "x size: " << measure[0].size() << ", y size: " << measure.size() << endl;
 	// for(auto mea: measure){
-	// 	cout << "range: " << mea[0] << " angle: " << mea[1] << endl; 
+	// 	cout << "range: " << mea[0] << " angle: " << mea[1] << endl;
 	// }
 	// ofstream output ("lidar.dat");
 	// if(output.is_open())
@@ -64,7 +64,7 @@ int main(){
 	// measure = test_v.scanMeasure(map_s, reso);
 	// cout << "Total obstacles captured: " << measure.size() << endl;
 	// updateOccupancyMap(measure, map_d, test_v, reso);
-	// cout << "measure1 finish" << endl; 
+	// cout << "measure1 finish" << endl;
 
 	// ofstream lidar_out ("lidar.dat");
 	// if(lidar_out.is_open())
@@ -76,7 +76,7 @@ int main(){
 	//     }
 	// }
 	// else cout << "Unable to open file";
-	
+
 	// // measure 2
 	// test_x = 570.427; test_y = 32.1875;
 	// Vehicle test_v2(test_x, test_y, 0.0, 60.0);
@@ -88,7 +88,7 @@ int main(){
 	// cout << "has been here 1" << endl;
 	// cout << "Total obstacles captured: " << measure.size() << endl;
 	// updateOccupancyMap(measure, map_d, test_v2, reso);
-	// cout << "measure2 finish" << endl; 
+	// cout << "measure2 finish" << endl;
 
 	// for(auto iter: measure){
  //    	double o_x = test_x + iter[0]*cos(iter[1]);
@@ -159,7 +159,7 @@ int main(){
 	test_v.fixOri(origin);
 	test_v.addNoiseMotion(0.0, 0.5, 0.0, 0.02); // add noise to motion model's velocity and steering angle. In the order of:
 										   		 // mean_v, stdev_v, mean_sa, stdev_sa. This step is necessary or the motion will be ground truth
-	test_v.addNoiseMea(0.0, 0.0, 0.0, 0.0); // add noise to measurement model's range and angle. In the order of:
+	test_v.addNoiseMea(0.0, 0.02, 0.0, 0.01); // add noise to measurement model's range and angle. In the order of:
 										   	  // mean_r, stdev_r, mean_a, stdev_a. This step is necessary or the measurement will be ground truth
 
 	string v_profile = "motion_command.dat"; // 1->v, 2->sa, 3->dt
@@ -196,11 +196,11 @@ int main(){
 	    // obstacles update ends
 		cout << "Total obstacles captured: " << measure.size() << endl;
 		// Particle filter starts to take estimation
-		pf.updateOccupancyMap(measure, map_d, test_v, reso);
 		pf.prediction(noise_motion);
 		pf.updateWeights(map_d, measure, test_v, reso);
 		pf.resample(test_v);
 		pf.estState(test_v);
+		pf.updateOccupancyMap(measure, map_d, test_v, reso);
 		output_est_state << test_v.x_est << " " << test_v.y_est << " " << test_v.yaw_est << endl;
 		// Particle filter estimation ends
 		cout << "finish the motion step " << counter << endl;
@@ -244,7 +244,7 @@ int main(){
 	//-------- Measure during motion + particle filter finished-----------//
 
 
-	
+
 	// cout << map_s.size() << " " << map_s[0].size();
 	// cout << endl;
 	// for(auto i: map_s){
