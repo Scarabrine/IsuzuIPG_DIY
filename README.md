@@ -41,7 +41,7 @@ The last step by **updateOccupancyMap** corresponds to the exploration task. By 
 The path planning part is adapted from [Atsushi Sakai](https://atsushisakai.github.io/HybridAStarTrailer/)'s git repo. Hybrid A* is modification based on A* which enables the path planner to plan a feasible path for trailer truck.
 
 ## Code Structure
-In this part, I will go through the structure of each function briefly
+In this part, we will go through the structure of each function briefly
 
 ### map.cpp & map.h
 **map** defines the map we use in the simulation. The map is in occupancy grid map form and each cell is represents by the class **Node**. **Node** contains information includes real work position (double x, double y), whether this cell is occupied (bool occu), the possiblity of this cell being a obstacle (poss) and the thresold value we consider this cell as a obstalce (thre). Only when the **poss** exceeds 'thre' can we consider **occu** being true.
@@ -62,6 +62,9 @@ The **vehilce.cpp** and **vehicle.h** mainly contain a class called **Vehicle**.
 
 ### pf.cpp and pf.h
 The overall idea of particle filter has been included in **Localization and Exploration**.
+
+### main.cpp
+**main.cpp** wraps up everything. It first initialize the dynamic, static and ground truth map. Here, we will define the map resolution by **RES** and **reso** variables. **limit** includes the x_min, x_max, y_min, y_max of the generated map. Then, for the 'Measure during motion + particle filter' part, the particle filter and vehicle classes are first initialized. The motion and measurement noises are also defined here. The while loop below simulate the motion of vechile. For each loop, one motion command is taken. The lidar, particle filter and radar are all operated once in this loop. Loop will only be exited in two cases. 1. when motion stops; 2. when there is a valid parking space found by radar. When there is a parking space found, the Hybrid A* algorithm will come in. 
 
 ## Expected Outcomes
 After run the **main** function, and then use **map_plot.py** to plot the results, you are expected following results.
