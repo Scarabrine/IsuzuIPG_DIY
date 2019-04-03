@@ -65,3 +65,10 @@ The overall idea of particle filter has been included in **Localization and Expl
 
 ## Expected Outcomes
 After run the **main** function, and then use **map_plot.py** to plot the results, you are expected following results.
+![alt text](https://github.com/Scarabrine/IsuzuIPG_DIY/blob/master/image/result1.png)
+In this figure, left top figure shows the static map(background, blue one but actually is dark because there are too many points) and raw lidar measurement(red points, there are much outliers due to designed noise). Purple line is the estimated position by particle filter, and it's almost overlapped with the ground truth one (green) which shows localization is pretty good. In contrast, yellow line represents the vehicle position only by the odometer information. 
+Right top figure shows the filtered lidar (red) and radar (pink) measurement - you can consider this as the final dynamic map. The blue background is the ground truth which includes parking vehicles.
+Right bottom figure shows the parking space found by algorithm. After the parking space is found, Hybrid A* is called to plan a path for parallel parking of the given trailer truck. The curve in this figure shows the planned path.
+![alt_text](https://github.com/Scarabrine/IsuzuIPG_DIY/blob/master/image/result2.png)
+The left and right top figures are almost the same from last result. However, due to the slightly change of final position, Hybrid A* plan a different path which includes both forward and backward motion.
+
