@@ -49,7 +49,13 @@ Moreover, **map.cpp** includes two map initialization functions. **vector<double
   
 ### vehicle.cpp & vehicle.h
 The vehilce.cpp and vehicle.h mainly contain a class called **Vehicle**. This class includes all the parameters of the vehicle:
-* x, y, yaw -> These three parameters correspond to the ground truth position and heading angle of vehicle.
+* **x, y, yaw** -> These three parameters correspond to the ground truth position and heading angle of vehicle.
+* **x_mea, y_mea, yaw_mea** -> These three parameters correspond to the position when the measured speed and steering angle rate has noise. That's say, this state is off from ground truth mentioned above due to the measurement noise.
+* **x_est, y_est, yaw_est** -> These three parameters correspond to the estimated position by particle filter, which should be more accurate than **x_mea** groups. You should use this as the vehicle position in future work because it's impossible to get ground truth position in real world.
+* **addNoiseMotion** -> This function define the noise when measure vehicle's speed and steering rate. The noise is assumed to be gaussian, so four input are velocity and steering rate's mean and standard deviation.
+* **addNoiseMea** -> This function define the noise of lidar measurement. The noise is also in gaussian form. Four inputs correpond to measurement range and bearing's mean and standard deviation.
+* **getMeaState** -> Returns the vehilce's position only based on odometer information, aka **x_mea, y_mea, yaw_mea**
+* **scanMeasure** -> This is actually the lidar's scan model. We didn't seperate it as an independent class. The scan model is simplified but still approximates a high resolution lidar's function. The only property for lidar is **range** which is how far the lidar can see. In this case, we do BFS search within a circle defined by **range**. Every obstacle which has no other between vehicle positoin and itself will be measured. The measurement is the distance and relative angle of obstacle to the current vehicle state. **!!Notice**, the relative angle is in vehicle's coordinate, **!!Not** world frame.
 
 ### radar.cpp && radar.h
 
