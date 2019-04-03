@@ -64,7 +64,7 @@ void particleFilter::prediction(vector<double>& motion){
 
 // update the weight for each sample. If the measurement from this particle is in an obstacle cell, then the weight will be added by 1.0
 // else the weight will be reduced by 0.5
-void particleFilter::updateWeights(vector<vector<Node*>>& map_d, vector<vector<double>>& mea, Vehicle& test_v, double res){
+void particleFilter::updateWeights(vector<vector<Cell*>>& map_d, vector<vector<double>>& mea, Vehicle& test_v, double res){
 	double ori_x = test_v.getOri()[0], ori_y = test_v.getOri()[1];
 	int i = 0;
 	// cout << "weight: ";
@@ -186,7 +186,7 @@ void particleFilter::estState(Vehicle& test_v){
 }
 
 
-void particleFilter::updateOccupancyMap(vector<vector<double>>& mea, vector<vector<Node*>>& map_in, Vehicle& car, double res){
+void particleFilter::updateOccupancyMap(vector<vector<double>>& mea, vector<vector<Cell*>>& map_in, Vehicle& car, double res){
 	vector<vector<int>> m_obstacle(mea.size(), vector<int>(2,0));
 	vector<double> car_state = car.getState();
 	// double cur_x = car_state[0], cur_y = car_state[1], cur_yaw = car_state[2]; // ground truth: current car's state
@@ -211,7 +211,7 @@ void particleFilter::updateOccupancyMap(vector<vector<double>>& mea, vector<vect
 		// we can add 3 to the hit and minus 1 to the free space. In this case, we can reduce the random
 		// error's harm to the occupancy grid map
 		// !!But now, I only care the hit part not the free space along the laser beam.
-		map_in[o_y_i][o_x_i]->updateNode(true); // true == hit
+		map_in[o_y_i][o_x_i]->updateCell(true); // true == hit
 	}
 	// cout << "updateOccupancyMap is finished" << endl;
 }

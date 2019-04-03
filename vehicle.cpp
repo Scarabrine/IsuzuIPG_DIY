@@ -27,7 +27,7 @@ vector<double> Vehicle::move_mea(double v, double sa, double dt){
 	normal_distribution<double> dist_sa(mean_sa, stdev_sa);
 	double v_n = (v + dist_v(gene));
 	double sa_n = (sa + dist_sa(gene));
-	cout << "v: " << v << " sa: " << sa << " v_n: " << v_n << " sa_n: " << sa_n << endl; 
+	cout << "v: " << v << " sa: " << sa << " v_n: " << v_n << " sa_n: " << sa_n << endl;
 	x_mea += v_n*cos(yaw_mea)*dt;
 	y_mea += v_n*sin(yaw_mea)*dt;
 	yaw_mea += sa_n*dt;
@@ -41,7 +41,7 @@ void Vehicle::fixOri(vector<double>& origin){
 	ori_y = origin[1];
 }
 
-vector<vector<double>> Vehicle::scanMeasure(vector<vector<Node*>>& map_in, double res){
+vector<vector<double>> Vehicle::scanMeasure(vector<vector<Cell*>>& map_in, double res){
 	normal_distribution<double> dist_r(mean_r, stdev_r);
 	normal_distribution<double> dist_a(mean_a, stdev_a);
 
@@ -74,7 +74,7 @@ vector<vector<double>> Vehicle::scanMeasure(vector<vector<Node*>>& map_in, doubl
 				int flag = 0;
 				int next_x = cur_x+iter[0], next_y = cur_y+iter[1];
 				if(next_x < map_in[0].size() && next_x >= 0 && next_y < map_in.size() && next_y >= 0){
-					Node* next_node = map_in[next_y][next_x];
+					Cell* next_node = map_in[next_y][next_x];
 					double x_nd = next_node->getPos()[0], y_nd = next_node->getPos()[1]; // nd means next pos's double coordinate
 					angle_g = atan2(y_nd-y, x_nd-x); // this is golbal coordinate
 					// cout << "x_nd " << x_nd << " y_nd " << y_nd << endl;
@@ -100,7 +100,7 @@ vector<vector<double>> Vehicle::scanMeasure(vector<vector<Node*>>& map_in, doubl
 							break;
 						}
 					}
-				
+
 					// whether this is a block, if is a block, add the range it blocks and put it in lidar measurement
 					if(flag == 0 && next_node->isOcc()){
 						double relative_angle = angle_g-yaw; // turn global angle into robot coordinate
@@ -123,4 +123,3 @@ vector<vector<double>> Vehicle::scanMeasure(vector<vector<Node*>>& map_in, doubl
 
 	return result;
 }
-

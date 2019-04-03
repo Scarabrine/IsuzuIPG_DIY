@@ -4,26 +4,47 @@
 #include <string>
 #include <cmath>
 #include <sstream>
+
+#include "Radar.h"
 #include "map.h"
 #include "vehicle.h"
 #include "pf.h"
+#include "Parameters.hpp"
+
+// planning lib
+#include "HybridAstar_truck_cplusplus/src/pathfinder_hybrid_astar.hpp"
+#include "HybridAstar_truck_cplusplus/src/map.hpp"
+#include "HybridAstar_truck_cplusplus/src/def_all.hpp"
 
 using namespace std;
+
+static vector<double> path_x;
+static vector<double> path_y;
+static vector<double> path_yaw;
+static vector<double> path_yaw1;
+static vector<bool> path_direction;
 
 int main(){
 	double reso = 0.5; // resolution for map
 	string static_map = "map2.dat";
 	string gt_map = "map_vehicle.dat";
 	// static map -> doesn't include vechicle
-	vector<vector<Node*>> map_s;
+	vector<vector<Cell*>> map_s;
 	// ground truth map -> include all the vehicle
-	vector<vector<Node*>> map_g;
+	vector<vector<Cell*>> map_g;
+	vector<vector<Cell*>> map_g_radar;
 	// dynamic map -> all the measurements are from SLAM
-	vector<vector<Node*>> map_d;
+	vector<vector<Cell*>> map_d;
+	vector<vector<Cell*>> map_d_radar;
+
 	vector<double> limit; // x_min, x_max, y_min, y_max for static map
 	vector<double> limit_gt; // x_min, x_max, y_min, y_max for ground truth map
+	vector<double> limit_gt_radar; // x_min, x_max, y_min, y_max for ground truth radar map
+
 	limit = initMap(map_s, static_map, reso);
 	limit_gt = initMap(map_g, gt_map, reso);
+	limit_gt_radar = initMap(map_g_radar, gt_map, RES);
+	initMap(map_d_radar, limit_gt_radar, RES, 0, 2);
 	initMap(map_d, limit, reso, 0, 12); // initialize the dynamic map
 	//---------- See if the static map and ground truth map have the same size ------------//
 	cout << "map_s-> " << "x_min: " << limit[0] << " x_max: " << limit[1] << " y_min: " << limit[2] << " y_max: " << limit[3] << endl;
@@ -138,7 +159,7 @@ int main(){
 	//     for(auto iter: map_d){
 	//     	for(auto node: iter){
 	//     		if(node->isOcc()){
-	//     			double o_x = node->getPos()[0];
+	//     			double o_x = nodeNode->getPos()[0];
 	//     			double o_y = node->getPos()[1];
 	// 		    	output << o_x << " " << o_y << endl;
 	// 		    }
@@ -162,6 +183,10 @@ int main(){
 	test_v.addNoiseMea(0.0, 0.02, 0.0, 0.01); // add noise to measurement model's range and angle. In the order of:
 										   	  // mean_r, stdev_r, mean_a, stdev_a. This step is necessary or the measurement will be ground truth
 
+  vector<double> goal = {0.0, 0.0}; // !!! Goal location of the vehicle: will be passed to A* later
+	double init_x, init_y, heading;   // radar position, will used in the motion while loop
+
+
 	string v_profile = "motion_command.dat"; // 1->v, 2->sa, 3->dt
 	ifstream motion_c;
 	motion_c.open(v_profile);
@@ -169,12 +194,17 @@ int main(){
 
 	vector<double> noise_motion; // the noise motion command: [v_n, sa_n, dt]
 	vector<vector<double>> measure;
-	int counter = 0;
+	// radar settings
+	Radar Radar_Handle(R_RADAR_X, R_RADAR_Y, R_RADAR_Z, R_RADAR_HEADING,
+                       R_RADAR_RANGE, R_RADAR_AOS, R_RADAR_NUMDIR); // x,y,z,yaw, range,AoS, NUM_DIR
+	vector<radar_t> measure_radar;
 
 	ofstream output_lidar ("lidar.dat");
 	ofstream output_pose ("robot_pos.dat");
 	ofstream output_motion_mea ("robot_pos_mea.dat");
 	ofstream output_est_state("estimated_pos.dat");
+
+	int counter = 0;
 
 	while(getline(motion_c, line)){
 		++counter;
@@ -185,15 +215,15 @@ int main(){
 		noise_motion = test_v.move_mea(v,sa,dt);
 		measure.clear();
 		measure = test_v.scanMeasure(map_g, reso);
-		// update all the obstacles
+		// update all the obstacles by lidar data
 		for(auto iter: measure){
 	    	double o_x = test_v.getState()[0] + iter[0]*cos(iter[1]+test_v.getState()[2]);
 	    	double o_y = test_v.getState()[1] + iter[0]*sin(iter[1]+test_v.getState()[2]);
 	    	output_lidar << o_x << " " << o_y << endl;
-	    }
-	    output_pose << test_v.getState()[0] << " " << test_v.getState()[1] << endl;
-	    output_motion_mea << test_v.getMeaState()[0] << " " << test_v.getMeaState()[1] << endl;
-	    // obstacles update ends
+    }
+    output_pose << test_v.getState()[0] << " " << test_v.getState()[1] << endl;
+    output_motion_mea << test_v.getMeaState()[0] << " " << test_v.getMeaState()[1] << endl;
+    // obstacles update ends
 		cout << "Total obstacles captured: " << measure.size() << endl;
 		// Particle filter starts to take estimation
 		pf.prediction(noise_motion);
@@ -202,6 +232,80 @@ int main(){
 		pf.estState(test_v);
 		pf.updateOccupancyMap(measure, map_d, test_v, reso);
 		output_est_state << test_v.x_est << " " << test_v.y_est << " " << test_v.yaw_est << endl;
+
+		// radar start ->
+		double space_idx = -1;
+    if (test_v.x_est>=PARALLEL_SPACE_CORNER[0][0] && test_v.x_est<PARALLEL_SPACE_CORNER[1][0]) space_idx = 0;
+    if (test_v.x_est>=PARALLEL_SPACE_CORNER[1][0] && test_v.x_est<PARALLEL_SPACE_CORNER[2][0]) space_idx = 1;
+    if (test_v.x_est>=PARALLEL_SPACE_CORNER[2][0] && test_v.x_est<PARALLEL_SPACE_CORNER[3][0]) space_idx = 2;
+    if (test_v.x_est>=PARALLEL_SPACE_CORNER[3][0] && test_v.x_est<PARALLEL_SPACE_CORNER[4][0]) space_idx = 3;
+    if (test_v.x_est>=PARALLEL_SPACE_CORNER[4][0] && test_v.x_est<PARALLEL_SPACE_CORNER[5][0]) space_idx = 4;
+    if (test_v.x_est>=PARALLEL_SPACE_CORNER[5][0]) space_idx = 5;
+			// radar position
+    init_x = test_v.x_est + Radar_Handle.getPose()[0];
+    init_y = test_v.y_est + Radar_Handle.getPose()[1];
+    heading = test_v.yaw_est + Radar_Handle.getPose()[3];
+			// radar scan
+		vector<double> vehicle_pose = {test_v.x_est, test_v.y_est, 0.0};
+		measure_radar = Radar_Handle.scanRadar(map_g_radar, RES, vehicle_pose);
+		if(space_idx != -1)
+    	Radar_Handle.spaceFilter(measure_radar, space_idx, map_d_radar, limit_gt_radar, vehicle_pose, RES, "ONE_CHECK");
+			// check occupancy
+		int check_idx = -1;
+    if (test_v.x_est < (PARALLEL_SPACE_CORNER[1][0] + TOLERANCE) && test_v.x_est > (PARALLEL_SPACE_CORNER[1][0] - TOLERANCE)) check_idx = 0;
+    if (test_v.x_est < (PARALLEL_SPACE_CORNER[2][0] + TOLERANCE) && test_v.x_est > (PARALLEL_SPACE_CORNER[2][0] - TOLERANCE)) check_idx = 1;
+    if (test_v.x_est < (PARALLEL_SPACE_CORNER[3][0] + TOLERANCE) && test_v.x_est > (PARALLEL_SPACE_CORNER[3][0] - TOLERANCE)) check_idx = 2;
+    if (test_v.x_est < (PARALLEL_SPACE_CORNER[4][0] + TOLERANCE) && test_v.x_est > (PARALLEL_SPACE_CORNER[4][0] - TOLERANCE)) check_idx = 3;
+    if (test_v.x_est < (PARALLEL_SPACE_CORNER[5][0] + TOLERANCE) && test_v.x_est > (PARALLEL_SPACE_CORNER[5][0] - TOLERANCE)) check_idx = 4;
+    if (test_v.x_est < (PARALLEL_SPACE_CORNER[5][0] + PARALLEL_SPACE_LENGTH + TOLERANCE) && test_v.x_est > (PARALLEL_SPACE_CORNER[5][0] + PARALLEL_SPACE_LENGTH - TOLERANCE)) check_idx = 5;
+    if (check_idx != -1) {
+	    bool free_space = Radar_Handle.occupancyCheck(map_d_radar, limit_gt_radar, RES, check_idx, goal);
+			cout << "check idx: " << check_idx << endl;
+			if(free_space){
+			 cout << "Get free space and goal location found, g_x: " << goal[0] << ", g_y: " << goal[1] << endl;
+			 // build map for hybrid A* start ->
+			 vector<double> ox_map;
+			 vector<double> oy_map;
+			 for(auto& row: map_g_radar){
+				 for(auto& node: row){
+					 double mapx = node->getPos()[0], mapy = node->getPos()[1];
+					 if(node->isOcc()){
+						 ox_map.push_back(mapx);
+						 oy_map.push_back(mapy);
+					 }
+				 }
+			 }
+			 Map obstacle_map(limit_gt_radar[0], limit_gt_radar[2], limit_gt_radar[1], limit_gt_radar[3], ox_map, oy_map); // this is the obstacle map will be used in Hybrid A* path planning
+			 cout << "Road extraction is done" << endl;
+			 // build map for hybrid A* end <-
+
+			 // start path planning
+			 /// -----------------------------   change to IPG parameters -----------------
+			 double start_x = test_v.x_est;
+			 double start_y = test_v.y_est;
+			 double start_yaw0 = test_v.yaw_est;
+			 double start_yaw1 = test_v.yaw_est;
+
+			 double goal_x = goal[0];
+			 double goal_y = goal[1];
+			 double goal_yaw0 = 0;
+			 double goal_yaw1 = 0;
+
+			 // planning
+			 Path_Final* path_ = calc_hybrid_astar_path(start_x, start_y, start_yaw0, start_yaw1,
+			 											goal_x, goal_y, goal_yaw0, goal_yaw1, obstacle_map);
+
+			 path_x = path_->x;
+	     path_y = path_->y;
+	     path_yaw = path_->yaw;
+	     path_yaw1 = path_->yaw1;
+	     path_direction = path_->direction;
+
+			 break;
+			}
+	     //cout<<"Time: "<<t<<" x location: "<<test_v.x_est<<" the parking space "<<check_idx<<" is free: "<<free_space<<endl;
+    }
+		// radar end <-
 		// Particle filter estimation ends
 		cout << "finish the motion step " << counter << endl;
 	}
@@ -240,6 +344,31 @@ int main(){
 	    }
 	    output_gt.close();
 	}
+
+	ofstream output_radar ("radar_dynamic_map.dat");
+	if(output_radar.is_open())
+	{
+	    for(auto iter: map_d_radar){
+	    	for(auto node: iter){
+	    		if(node->isOcc()){
+	    			double o_x = node->getPos()[0];
+	    			double o_y = node->getPos()[1];
+			    	output_radar << o_x << " " << o_y << endl;
+			    }
+	    	}
+	    }
+	    output_radar.close();
+	}
+
+	ofstream output_path ("Astart_Path.dat");
+	if(output_path.is_open())
+	{
+    	for(int i = 0; i < path_x.size(); ++i){
+		    output_path << path_x[i] << " " << path_y[i] << " " << path_yaw[i] << " " << path_yaw1[i] << endl;
+    	}
+	    output_path.close();
+	}
+
 
 	//-------- Measure during motion + particle filter finished-----------//
 

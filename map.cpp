@@ -22,7 +22,7 @@
 using namespace std;
 
 // Turn the IPG map.dat to the static map
-vector<double> initMap(vector<vector<Node*>>& map, string dir, double res){
+vector<double> initMap(vector<vector<Cell*>>& map, string dir, double res){
 	vector<vector<double>> ob; // all the obstacles in the map.dat;
 	// open the map data
 	ifstream map_in;
@@ -47,13 +47,13 @@ vector<double> initMap(vector<vector<Node*>>& map, string dir, double res){
 	}
 	int size_x = (x_max-x_min)/res+1;
 	int size_y = (y_max-y_min)/res+1;
-	vector<vector<Node*>> ini(size_y, vector<Node*>(size_x, new Node(0.0, 0.0, false)));
+	vector<vector<Cell*>> ini(size_y, vector<Cell*>(size_x, new Cell(0.0, 0.0, false)));
 	// initilize all the static map point - only the coordinate
 	for(int i = 0; i < size_x; ++i){
 		for(int j = 0; j < size_y; ++j){
 			double x_ini = x_min + res*i, y_ini = y_min + res*j;
 			bool occ_ini = false;
-			Node* node_new = new Node(x_ini, y_ini, occ_ini);
+			Cell* node_new = new Cell(x_ini, y_ini, occ_ini);
 			ini[j][i] = node_new;
 		}
 	}
@@ -71,18 +71,18 @@ vector<double> initMap(vector<vector<Node*>>& map, string dir, double res){
 }
 
 // create a blank map for dynamic map
-void initMap(vector<vector<Node*>>& map, vector<double> limit, double res, int8_t poss, int8_t thre){
+void initMap(vector<vector<Cell*>>& map, vector<double> limit, double res, int8_t poss, int8_t thre){
 	double x_min = limit[0], x_max = limit[1], y_min = limit[2], y_max = limit[3];
 	int size_x = (x_max-x_min)/res+1;
 	int size_y = (y_max-y_min)/res+1;
-	vector<vector<Node*>> ini(size_y, vector<Node*>(size_x, new Node(0.0, 0.0, false)));
+	vector<vector<Cell*>> ini(size_y, vector<Cell*>(size_x, new Cell(0.0, 0.0, false)));
 	// cout << "init map here" << endl;
 	for(int i = 0; i < size_x; ++i){
 		// cout << "build " << i << "row" << endl;
 		for(int j = 0; j < size_y; ++j){
 			double x_ini = x_min + res*i, y_ini = y_min + res*j;
 			bool occ_ini = false;
-			Node* node_new = new Node(x_ini, y_ini, occ_ini);
+			Cell* node_new = new Cell(x_ini, y_ini, occ_ini);
 			ini[j][i] = node_new;
 			node_new->possSet(poss, thre);
 		}
@@ -90,16 +90,3 @@ void initMap(vector<vector<Node*>>& map, vector<double> limit, double res, int8_
 	map = ini;
 	return;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

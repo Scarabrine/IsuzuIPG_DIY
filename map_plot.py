@@ -16,6 +16,8 @@ dynamic_file = "dynamic_map.dat"
 motion_mea_file = "robot_pos_mea.dat"
 pos_est_file = "estimated_pos.dat"
 sample_file = "pf_sample.dat"
+radar_file = "radar_dynamic_map.dat"
+path_plan_file = "Astart_Path.dat"
 
 # map
 plt.plotfile(map_file, delimiter=' ', cols=(0,1),
@@ -28,7 +30,7 @@ plt.plotfile(lidar_file, delimiter=' ', cols=(0,1),
 
 plt.plotfile(robot_file, delimiter=' ', cols=(0,1),
 	names=('x','y'), checkrows = 0, marker='*',
-	linestyle=' ', color='g', newfig=True)
+	linestyle=' ', color='g', newfig=False)
 
 plt.plotfile(pos_est_file, delimiter=' ', cols=(0,1),
 	names=('x','y'), checkrows = 0, marker='*',
@@ -50,6 +52,17 @@ plt.plotfile(dynamic_file, delimiter=' ', cols=(0,1),
 	names=('x','y'), checkrows = 0, marker='o',
 	linestyle=' ', color='r', newfig=False)
 
+plt.plotfile(radar_file, delimiter=' ', cols=(0,1),
+	names=('x','y'), checkrows = 0, marker='o',
+	linestyle=' ', color='m', newfig=False)
+
+plt.plotfile(path_plan_file, delimiter=' ', cols=(0,1),
+	names=('x','y'), checkrows = 0, marker='*',
+	linestyle=' ', color='m', newfig=True)
+
+plt.plotfile(map_vehicle_file, delimiter=' ', cols=(0,1),
+	names=('x','y'), checkrows = 0, marker='o',
+	linestyle=' ', color='b', newfig=False)
 
 
 # if args.path:

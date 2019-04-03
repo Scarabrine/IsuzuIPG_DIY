@@ -11,9 +11,9 @@
 #include <vector>
 #include <string>
 
-class Node {
+class Cell {
 public:
-	Node(float x_in, float y_in, bool occu_in): x(x_in), y(y_in), occu(occu_in){}
+	Cell(float x_in, float y_in, bool occu_in): x(x_in), y(y_in), occu(occu_in){}
 	void changeOcc(bool in){
 		occu = in;
 	}
@@ -29,7 +29,7 @@ public:
 		thre = thre_in;
 		return;
 	}
-	void updateNode(bool hit){
+	void updateCell(bool hit){
 		// hit +3 travel though -1
 		if(hit && poss < 125) poss+=3;
 		else if(!hit && poss > -126) --poss;
@@ -47,7 +47,7 @@ private:
 
 };
 
-std::vector<double> initMap(std::vector<std::vector<Node*>>& map, std::string dir, double res);
-void initMap(std::vector<std::vector<Node*>>& map, std::vector<double> limit, double res, int8_t poss, int8_t thre);
+std::vector<double> initMap(std::vector<std::vector<Cell*>>& map, std::string dir, double res);
+void initMap(std::vector<std::vector<Cell*>>& map, std::vector<double> limit, double res, int8_t poss, int8_t thre);
 
 #endif /* MAP_H_ */

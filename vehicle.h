@@ -52,7 +52,7 @@ public:
 		mean_a = mean_a_in;
 		stdev_a = stdev_a_in;
 	}
-	
+
 	std::vector<double> getState(){
 		std::vector<double> res = {x,y,yaw};
 		return res;
@@ -69,7 +69,7 @@ public:
 	}
 
 	// return all the obstacles can be measured by the laser scanner
-	std::vector<std::vector<double>> scanMeasure(std::vector<std::vector<Node*>>& map_in, double res);
+	std::vector<std::vector<double>> scanMeasure(std::vector<std::vector<Cell*>>& map_in, double res);
 
 
 private:
