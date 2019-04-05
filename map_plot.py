@@ -57,12 +57,12 @@ plt.plotfile(radar_file, delimiter=' ', cols=(0,1),
 	linestyle=' ', color='m', newfig=False)
 
 plt.plotfile(path_plan_file, delimiter=' ', cols=(0,1),
-	names=('x','y'), checkrows = 0, marker='*',
-	linestyle=' ', color='m', newfig=True)
+	names=('x','y'), checkrows = 0, marker='.',
+	linestyle=' ', color='c', newfig=True)
 
 plt.plotfile(map_vehicle_file, delimiter=' ', cols=(0,1),
 	names=('x','y'), checkrows = 0, marker='o',
-	linestyle=' ', color='b', newfig=False)
+	linestyle=' ', color='k', newfig=False)
 
 
 # if args.path:

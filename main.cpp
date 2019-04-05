@@ -199,15 +199,25 @@ int main(){
                        R_RADAR_RANGE, R_RADAR_AOS, R_RADAR_NUMDIR); // x,y,z,yaw, range,AoS, NUM_DIR
 	vector<radar_t> measure_radar;
 
-	ofstream output_lidar ("lidar.dat");
-	ofstream output_pose ("robot_pos.dat");
-	ofstream output_motion_mea ("robot_pos_mea.dat");
-	ofstream output_est_state("estimated_pos.dat");
+	ofstream output_lidar ("data/lidar.dat");
+	ofstream output_pose ("data/robot_pos.dat");
+	ofstream output_motion_mea ("data/robot_pos_mea.dat");
+	ofstream output_est_state("data/estimated_pos.dat");
 
 	int counter = 0;
 
 	while(getline(motion_c, line)){
 		++counter;
+		// define the file names will make videos
+		string lidar_every_step = "data/lidar_step" + to_string(counter) + ".dat"; // record every step's radar measurement
+		string dynamic_every_step = "data/dynamic_step" + to_string(counter) + ".dat"; // record the dynamic map built in every step;
+		string radar_every_step = "data/radar_step" + to_string(counter) + ".dat"; // record the every step's radar measurement
+		// end define
+		// open the files defined in last step
+		ofstream lidar_step (lidar_every_step);
+		ofstream radar_step (radar_every_step);
+		ofstream dynamic_step (dynamic_every_step);
+		// end open
 		istringstream iss(line);
 		double v, sa, dt;
 		if(!(iss >> v >> sa >> dt)) break;
@@ -220,7 +230,9 @@ int main(){
 	    	double o_x = test_v.getState()[0] + iter[0]*cos(iter[1]+test_v.getState()[2]);
 	    	double o_y = test_v.getState()[1] + iter[0]*sin(iter[1]+test_v.getState()[2]);
 	    	output_lidar << o_x << " " << o_y << endl;
+				lidar_step << o_x << " " << o_y << endl; // record every step's measurement
     }
+		lidar_step.close();
     output_pose << test_v.getState()[0] << " " << test_v.getState()[1] << endl;
     output_motion_mea << test_v.getMeaState()[0] << " " << test_v.getMeaState()[1] << endl;
     // obstacles update ends
@@ -232,7 +244,21 @@ int main(){
 		pf.estState(test_v);
 		pf.updateOccupancyMap(measure, map_d, test_v, reso);
 		output_est_state << test_v.x_est << " " << test_v.y_est << " " << test_v.yaw_est << endl;
-
+		// record current step's dynamic map
+		if(dynamic_step.is_open())
+		{
+		    for(auto iter: map_d){
+		    	for(auto node: iter){
+		    		if(node->isOcc()){
+		    			double o_x = node->getPos()[0];
+		    			double o_y = node->getPos()[1];
+				    	dynamic_step << o_x << " " << o_y << endl;
+				    }
+		    	}
+		    }
+		    dynamic_step.close();
+		}
+		// end record current step's dynamic map
 		// radar start ->
 		double space_idx = -1;
     if (test_v.x_est>=PARALLEL_SPACE_CORNER[0][0] && test_v.x_est<PARALLEL_SPACE_CORNER[1][0]) space_idx = 0;
@@ -248,8 +274,23 @@ int main(){
 			// radar scan
 		vector<double> vehicle_pose = {test_v.x_est, test_v.y_est, 0.0};
 		measure_radar = Radar_Handle.scanRadar(map_g_radar, RES, vehicle_pose);
-		if(space_idx != -1)
+		if(space_idx != -1){
     	Radar_Handle.spaceFilter(measure_radar, space_idx, map_d_radar, limit_gt_radar, vehicle_pose, RES, "ONE_CHECK");
+			// output the current step's radar measurement
+			for (auto data : measure_radar) {
+				vector<double> radar_pose_local = Radar_Handle.getPose();
+				double init_x = test_v.x_est + radar_pose_local[0];
+				double init_y = test_v.y_est + radar_pose_local[1];
+				double heading = radar_pose_local[3] + test_v.yaw_est;
+        // obstacle location: in global frame
+        double ob_x_G = init_x + data.range * cos(data.alpha+heading);
+        double ob_y_G = init_y + data.range * sin(data.alpha+heading);
+				radar_step << ob_x_G << " " << ob_y_G << endl;
+			}
+			// output end;
+		}
+		radar_step.close();
+
 			// check occupancy
 		int check_idx = -1;
     if (test_v.x_est < (PARALLEL_SPACE_CORNER[1][0] + TOLERANCE) && test_v.x_est > (PARALLEL_SPACE_CORNER[1][0] - TOLERANCE)) check_idx = 0;
@@ -314,7 +355,7 @@ int main(){
 	output_motion_mea.close();
 	output_est_state.close();
 	// record the dynamic map based on the data from last several measurements
-	ofstream output ("dynamic_map.dat");
+	ofstream output ("data/dynamic_map.dat");
 	if(output.is_open())
 	{
 	    for(auto iter: map_d){
@@ -330,7 +371,7 @@ int main(){
 	}
 	else cout << "Unable to open file";
 	// record the ground truth map based on the map_vehicle.dat
-	ofstream output_gt ("gt_map.dat");
+	ofstream output_gt ("data/gt_map.dat");
 	if(output_gt.is_open())
 	{
 	    for(auto iter: map_g){
@@ -345,7 +386,7 @@ int main(){
 	    output_gt.close();
 	}
 
-	ofstream output_radar ("radar_dynamic_map.dat");
+	ofstream output_radar ("data/radar_dynamic_map.dat");
 	if(output_radar.is_open())
 	{
 	    for(auto iter: map_d_radar){
@@ -360,7 +401,7 @@ int main(){
 	    output_radar.close();
 	}
 
-	ofstream output_path ("Astart_Path.dat");
+	ofstream output_path ("data/Astart_Path.dat");
 	if(output_path.is_open())
 	{
     	for(int i = 0; i < path_x.size(); ++i){
