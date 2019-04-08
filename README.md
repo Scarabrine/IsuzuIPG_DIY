@@ -58,7 +58,21 @@ The **vehilce.cpp** and **vehicle.h** mainly contain a class called **Vehicle**.
 * **getMeaState** -> Returns the vehilce's position only based on odometer information, aka **x_mea, y_mea, yaw_mea**
 * **scanMeasure** -> This is actually the lidar's scan model. We didn't seperate it as an independent class. The scan model is simplified but still approximates a high resolution lidar's function. The only property for lidar is **range** which is how far the lidar can see. In this case, we do a typical BFS search within a circle defined by **range**. Every obstacle which has no other between vehicle positoin and itself will be measured. The measurement is the distance and relative angle of obstacle to the current vehicle state. **!!Notice**, the relative angle is in vehicle's coordinate, **!!Not** world frame. Whenever a measurement is taken, the angle it has blocked will be added to an vector. Everytime, when we find a obstacle within the range, we will first check if it's blocked by the previous obstacles. *Hint:* if we don't want to simulate a high resolution lidar, we can use Bresenham's algorithm to only check the cells on the laser beam we are intrested in. This will reduce the computational compleixty to O(n) not O(n^2) in the old version, where n is lidar range.
 
-### radar.cpp && radar.h
+### Radar.cpp && Radar.h
+**Radar.cpp** and **Radar.h** are the seperate radar class defining the radar configuration and detection algorithms. 
+Private Variables:
+* **x,y,z,yaw** -> The radar location and orientation relative to the end of vehicle. (Note, the orgin is set at the end of the vehicle in IPG).
+* **range, AoS, NUM_DIR** -> radar sensing range, angle of view, and number of emurated arrays in the sector region.
+* **vector<radar_t> measurements** -> current radar measurement stored in a vector.
+
+Member functions:
+* **Radar(double x_in, double y_in, double z_in, double yaw_in, double range, double AoS, double NUM_DIR)** -> Construct a Radar class handle.
+* **vector<double> getPose()** -> Return the radar position.
+* **vector<double> getSpec()** -> Return the radar specification.
+* __vector<radar_t> scanRadar(vector<vector<Cell*>>& map, double res, vector<double> vehicle_pose_global)__ -> Scan the surrounding area in the ground truth based on the current vehicle position.
+* __void spaceFilter(vector<radar_t>& measurements, int space_idx, vector<vector<Cell*>>& map, vector<double> limit, vector<double> vehicle_pose_global, double res, string flag)__ -> Filter the Raw Data, leave only obstacles in a designated parking space, store obstacles on the dynamic map.
+* __occupancyCheck(vector<vector<Cell*>>& map, vector<double> limit, double res, int space_idx, vector<double>& goal_pos)__ -> Check the availablity of a parking space on the current dynamic map (with detected obstacles).
+  
 
 ### pf.cpp and pf.h
 The overall idea of particle filter has been included in **Localization and Exploration**.
