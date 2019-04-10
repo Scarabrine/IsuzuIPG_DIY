@@ -8,7 +8,7 @@ The final outcomes is that we can extract a map.dat from IPG and based on the ma
 ## How To Use
 compile with g++ compiler includes c++11 library
 ```
-g++ --std=c++11 main.cpp map.cpp vehicle.cpp pf.cpp radar.cpp -o out
+g++ --std=c++11 main.cpp map.cpp vehicle.cpp pf.cpp Radar.cpp -o out
 ```
 when run the code, does
 ```
